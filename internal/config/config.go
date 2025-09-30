@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	tokenENV          = "TOKEN"
 	configFilePathENV = "CONFIG_FILE"
+	tokenTelegramENV  = "TELEGRAM_TOKEN"
 )
 
 type config struct {
@@ -42,7 +42,7 @@ func newNoop() config {
 	return config{}
 }
 
-func newConfig() config {
+func NewConfig() config {
 	file, err := os.Open(os.Getenv(configFilePathENV))
 	if err != nil {
 		log.Fatalf("Failed to open config file: %v", err)
@@ -58,11 +58,11 @@ func newConfig() config {
 	if err != nil {
 		log.Fatalf("Failed to decode config file: %v", err)
 	}
-	//
-	//tokenPServiceFromENV := os.Getenv(tokenENV)
-	//if tokenPServiceFromENV != "" {
-	//	config.ProductService.Token = tokenPServiceFromENV
-	//}
+
+	token := os.Getenv(tokenTelegramENV)
+	if token != "" {
+		config.Telegram.Token = token
+	}
 
 	return config
 }

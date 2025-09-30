@@ -11,13 +11,14 @@ import (
 	"time"
 
 	"github.com/Traliaa/KineticVPN-Bot/internal/adapter/telegram"
+	"github.com/Traliaa/KineticVPN-Bot/internal/config"
 	"github.com/Traliaa/KineticVPN-Bot/internal/usecase/telgram_bot"
 )
 
 const (
 	baseURL  = "https://rci.tankhome.netcraze.pro"
 	username = "api"
-	password = ""
+	password = "Demon0203"
 	timeout  = 30 * time.Second
 )
 
@@ -345,10 +346,11 @@ func (kc *KeeneticClient) HandleRestartCommand() string {
 
 // Пример использования
 func main() {
+	cfg := config.NewConfig()
 
 	s := telgram_bot.NewBotService()
 
-	bot := telegram.NewClient("", s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
+	bot := telegram.NewClient(cfg.Telegram.Token, s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
 	bot.Start(context.Background())
 	//client := NewKeeneticClient()
 	//

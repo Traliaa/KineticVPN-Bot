@@ -12,6 +12,7 @@ import (
 
 	"github.com/Traliaa/KineticVPN-Bot/internal/adapter/telegram"
 	"github.com/Traliaa/KineticVPN-Bot/internal/config"
+	"github.com/Traliaa/KineticVPN-Bot/internal/pg/user_settings"
 	"github.com/Traliaa/KineticVPN-Bot/internal/usecase/telgram_bot"
 )
 
@@ -346,6 +347,8 @@ func (kc *KeeneticClient) HandleRestartCommand() string {
 
 // Пример использования
 func main() {
+
+	user_settings.New()
 	cfg := config.NewConfig()
 
 	s := telgram_bot.NewBotService()

@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --from=builder /build/configs/values_ci.yaml .
 COPY --from=builder /build/bot .
 
-ENV CONFIG_FILE=values_ci.yaml
+#ENV CONFIG_FILE=values_ci.yaml
 
 EXPOSE 8080
 

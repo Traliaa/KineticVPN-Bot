@@ -365,7 +365,8 @@ func main() {
 		return
 	}
 	fmt.Println("✅ Successfully connected to Keenetic!")
-
+	// TELEGRAM_TOKEN 8250747795:AAFBy_jRtBWmeJkMDCGnLr4LOZjgfZ4dFB0
+	// CONFIG_FILE  values_ci.yaml
 	//// Тестируем разные форматы статуса
 	//fmt.Println("\n" + client.GetSystemStatus())
 	//fmt.Println("\n" + client.GetCombinedStatus())

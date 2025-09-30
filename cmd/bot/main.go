@@ -354,16 +354,16 @@ func main() {
 	s := telgram_bot.NewBotService()
 
 	bot := telegram.NewClient(cfg.Telegram.Token, s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
-	bot.Start(context.Background())
-	//client := NewKeeneticClient()
-	//
-	//fmt.Println("🔌 Testing connection to Keenetic...")
-	//
-	//// Проверяем подключение
-	//if err := client.CheckConnection(); err != nil {
-	//	fmt.Printf("❌ Connection failed: %v\n", err)
-	//	return
-	//}
+	go bot.Start(context.Background())
+	client := NewKeeneticClient()
+
+	fmt.Println("🔌 Testing connection to Keenetic...")
+
+	// Проверяем подключение
+	if err := client.CheckConnection(); err != nil {
+		fmt.Printf("❌ Connection failed: %v\n", err)
+		return
+	}
 	//fmt.Println("✅ Successfully connected to Keenetic!")
 	//
 	//// Тестируем разные форматы статуса

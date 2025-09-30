@@ -364,8 +364,8 @@ func main() {
 		fmt.Printf("❌ Connection failed: %v\n", err)
 		return
 	}
-	//fmt.Println("✅ Successfully connected to Keenetic!")
-	//
+	fmt.Println("✅ Successfully connected to Keenetic!")
+
 	//// Тестируем разные форматы статуса
 	//fmt.Println("\n" + client.GetSystemStatus())
 	//fmt.Println("\n" + client.GetCombinedStatus())

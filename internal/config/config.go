@@ -32,7 +32,7 @@ func NewConfig() *Config {
 	if configFileName == "" {
 		configFileName = "values_local.yaml"
 	}
-	file, err := os.Open(configFileName)
+	file, err := os.Open("configs/" + configFileName)
 	if err != nil {
 		log.Fatalf("Failed to open config file: %v", err)
 	}

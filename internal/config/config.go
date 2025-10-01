@@ -10,39 +10,23 @@ import (
 const (
 	configFilePathENV = "CONFIG_FILE"
 	tokenTelegramENV  = "TELEGRAM_TOKEN"
+	databaseDSN       = "DATABASE_DSN"
 )
 
-type config struct {
+// Config ...
+type Config struct {
 	Telegram struct {
 		Token string `yaml:"token"`
 	} `yaml:"telegram"`
-	//Jaeger struct {
-	//	Host string `yaml:"host"`
-	//	Port int    `yaml:"port"`
-	//} `yaml:"jaeger"`
-	//ProductService struct {
-	//	Host  string `yaml:"host"`
-	//	Port  int    `yaml:"port"`
-	//	Token string `yaml:"token"`
-	//	Limit int    `yaml:"limit"`
-	//	Burst int    `yaml:"burst"`
-	//} `yaml:"product_service"`
-	//LomsService struct {
-	//	Host string `yaml:"host"`
-	//	Port int    `yaml:"port"`
-	//} `yaml:"loms_service"`
-	//Redis struct {
-	//	Host string `yaml:"host"`
-	//	Port int    `yaml:"port"`
-	//} `yaml:"redis"`
+	DB string `yaml:"db_dsn"`
 }
 
 // NewNoop returns empty struct.
-func newNoop() config {
-	return config{}
+func newNoop() Config {
+	return Config{}
 }
 
-func NewConfig() config {
+func NewConfig() *Config {
 	file, err := os.Open(os.Getenv(configFilePathENV))
 	if err != nil {
 		log.Fatalf("Failed to open config file: %v", err)
@@ -53,7 +37,7 @@ func NewConfig() config {
 	}()
 
 	decoder := yaml.NewDecoder(file)
-	config := config{}
+	config := Config{}
 	err = decoder.Decode(&config)
 	if err != nil {
 		log.Fatalf("Failed to decode config file: %v", err)
@@ -64,5 +48,10 @@ func NewConfig() config {
 		config.Telegram.Token = token
 	}
 
-	return config
+	dsn := os.Getenv(databaseDSN)
+	if dsn != "" {
+		config.DB = dsn
+	}
+
+	return &config
 }

@@ -12,34 +12,25 @@ import (
 const dsnFormat = "postgres://%s:%s@%s:%d/%s?sslmode=disable"
 
 type PoolConfig struct {
-	User     string
-	Password string
-	Host     string
-	Port     int
-	DBName   string
+	DSN string
 }
 
 type PgTxManager struct {
-	poolMaster  *pgxpool.Pool
-	poolReplica *pgxpool.Pool
+	poolMaster *pgxpool.Pool
 }
 
-func NewPgTxManager(poolMaster, poolReplica *pgxpool.Pool) *PgTxManager {
+func NewPgTxManager(poolMaster *pgxpool.Pool) *PgTxManager {
 	return &PgTxManager{
-		poolMaster:  poolMaster,
-		poolReplica: poolReplica,
+		poolMaster: poolMaster,
 	}
 }
 
 func (m *PgTxManager) Close() {
-	m.poolReplica.Close()
 	m.poolMaster.Close()
 }
 
 func NewPool(ctx context.Context, conf PoolConfig) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf(dsnFormat, conf.User, conf.Password, conf.Host, conf.Port, conf.DBName)
-
-	return pgxpool.New(ctx, dsn)
+	return pgxpool.New(ctx, conf.DSN)
 }
 
 func (m *PgTxManager) RunMaster(ctx context.Context, fn func(ctxTx context.Context, tx Transaction) error) error {
@@ -51,22 +42,8 @@ func (m *PgTxManager) RunMaster(ctx context.Context, fn func(ctxTx context.Conte
 	return m.inTx(ctx, m.poolMaster, options, fn)
 }
 
-func (m *PgTxManager) RunReplica(ctx context.Context, fn func(ctxTx context.Context, tx Transaction) error) error {
-	options := pgx.TxOptions{
-		IsoLevel: pgx.ReadCommitted,
-	}
-	return m.inTx(ctx, m.poolReplica, options, fn)
-}
-
-//func (m *PgTxManager) Conn() Transaction {
-//	return m.poolMaster
-//}
-
-func (m *PgTxManager) RunRepeatableRead(ctx context.Context, fn func(ctxTx context.Context, tx Transaction) error) error {
-	options := pgx.TxOptions{
-		IsoLevel: pgx.RepeatableRead,
-	}
-	return m.inTx(ctx, m.poolReplica, options, fn)
+func (m *PgTxManager) Conn() Transaction {
+	return m.poolMaster
 }
 
 func (m *PgTxManager) inTx(

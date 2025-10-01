@@ -1,18 +1,18 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/Traliaa/KineticVPN-Bot/internal/adapter/telegram"
-	"github.com/Traliaa/KineticVPN-Bot/internal/config"
 	"github.com/Traliaa/KineticVPN-Bot/internal/pg/user_settings"
+	"github.com/Traliaa/KineticVPN-Bot/internal/prepare"
 	"github.com/Traliaa/KineticVPN-Bot/internal/usecase/telgram_bot"
 )
 
@@ -348,13 +348,22 @@ func (kc *KeeneticClient) HandleRestartCommand() string {
 // Пример использования
 func main() {
 
+	app, ctx := mustNewApp()
+
+	db, err := prepare.MustNewPg(ctx, app.GetConfig())
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	db.Conn()
+
 	user_settings.New()
-	cfg := config.NewConfig()
 
 	s := telgram_bot.NewBotService()
 
-	bot := telegram.NewClient(cfg.Telegram.Token, s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
-	go bot.Start(context.Background())
+	bot := telegram.NewClient(app.GetConfig().Telegram.Token, s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
+
+	app.SetBot(bot)
+
 	client := NewKeeneticClient()
 
 	fmt.Println("🔌 Testing connection to Keenetic...")
@@ -362,11 +371,10 @@ func main() {
 	// Проверяем подключение
 	if err := client.CheckConnection(); err != nil {
 		fmt.Printf("❌ Connection failed: %v\n", err)
-		return
+		//return
 	}
 	fmt.Println("✅ Successfully connected to Keenetic!")
-	// TELEGRAM_TOKEN 8250747795:AAFBy_jRtBWmeJkMDCGnLr4LOZjgfZ4dFB0
-	// CONFIG_FILE  values_ci.yaml
+	bot.Start(ctx)
 	//// Тестируем разные форматы статуса
 	//fmt.Println("\n" + client.GetSystemStatus())
 	//fmt.Println("\n" + client.GetCombinedStatus())

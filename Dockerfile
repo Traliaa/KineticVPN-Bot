@@ -1,22 +1,35 @@
-# Stage 1: сборка
+# Stage 1: builder
 FROM golang:1.25 AS builder
 WORKDIR /build
 
-COPY go.mod .
+# Скачиваем зависимости
+COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем весь проект
 COPY . .
+
+# Собираем Go-бота
 RUN CGO_ENABLED=0 GOOS=linux go build -o bot ./cmd/bot
 
-# Stage 2: минимальный образ
-FROM scratch
+# Ставим goose (в builder)
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
+# Stage 2: runtime
+FROM golang:1.25 AS runtime
 WORKDIR /app
 
+# Копируем бота
 COPY --from=builder /build/bot .
+# Копируем goose
+COPY --from=builder /go/bin/goose /usr/local/bin/goose
+# Копируем миграции и конфиги
+COPY --from=builder /build/migrations ./migrations
 COPY --from=builder /build/configs ./configs
 
 EXPOSE 8080
 
-# В ENV передаем имя файла конфигурации
-# В локальном запуске можно не задавать ENV, будет values_local.yaml
-ENTRYPOINT ["./bot"]
+# При запуске контейнера:
+# 1. прогоняем миграции
+# 2. стартуем бота
+ENTRYPOINT sh -c "goose -dir ./migrations postgres \"$DATABASE_DSN\" up && ./bot"

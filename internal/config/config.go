@@ -27,7 +27,12 @@ func newNoop() Config {
 }
 
 func NewConfig() *Config {
-	file, err := os.Open(os.Getenv(configFilePathENV))
+
+	configFileName := os.Getenv("configFilePathENV")
+	if configFileName == "" {
+		configFileName = "values_local.yaml"
+	}
+	file, err := os.Open(configFileName)
 	if err != nil {
 		log.Fatalf("Failed to open config file: %v", err)
 	}

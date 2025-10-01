@@ -28,7 +28,7 @@ func newNoop() Config {
 
 func NewConfig() *Config {
 
-	configFileName := os.Getenv("configFilePathENV")
+	configFileName := os.Getenv(configFilePathENV)
 	if configFileName == "" {
 		configFileName = "values_local.yaml"
 	}

@@ -16,5 +16,10 @@ func MustNewPg(ctx context.Context, cfg *config.Config) (*db.PgTxManager, error)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create poolMaster: %w", err)
 	}
+
+	err = poolMaster.Ping(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return db.NewPgTxManager(poolMaster), nil
 }

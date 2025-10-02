@@ -18,7 +18,11 @@ type Config struct {
 	Telegram struct {
 		Token string `yaml:"token"`
 	} `yaml:"telegram"`
-	DB string `yaml:"db_dsn"`
+	DB      string `yaml:"db_dsn"`
+	Service struct {
+		Host     string `yaml:"host"`
+		HTTPPort int    `yaml:"http_port"`
+	} `yaml:"service"`
 }
 
 // NewNoop returns empty struct.

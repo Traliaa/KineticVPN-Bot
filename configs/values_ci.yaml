@@ -1,23 +1,23 @@
 service:
   host: localhost
-  port: 8080
+  port: 3000
   workers: 5
 
-jaeger:
-  host: localhost
-  port: 6831
-
-product_service:
-  host: product-service
-  port: 8082
-  token: testToken
-  limit: 10
-  burst: 10
-
-loms_service:
-  host: localhost
-  port: 8083
-
-redis:
-  host: redis
-  port: 6379
+#jaeger:
+#  host: localhost
+#  port: 6831
+#
+#product_service:
+#  host: product-service
+#  port: 8082
+#  token: testToken
+#  limit: 10
+#  burst: 10
+#
+#loms_service:
+#  host: localhost
+#  port: 8083
+#
+#redis:
+#  host: redis
+#  port: 6379

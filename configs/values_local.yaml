@@ -1,7 +1,11 @@
-telegram:
-  token: localhost
+#telegram:
+#  token: localhost
+#
+#keen:
+#  host: localhost
+#  port: 6831
 
-keen:
+service:
   host: localhost
-  port: 6831
-
+  port: 3000
+  workers: 5

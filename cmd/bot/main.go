@@ -1,19 +1,17 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
-
-	"github.com/Traliaa/KineticVPN-Bot/internal/adapter/telegram"
-	"github.com/Traliaa/KineticVPN-Bot/internal/pg/user_settings"
-	"github.com/Traliaa/KineticVPN-Bot/internal/prepare"
-	"github.com/Traliaa/KineticVPN-Bot/internal/usecase/telgram_bot"
 )
 
 const (
@@ -347,46 +345,22 @@ func (kc *KeeneticClient) HandleRestartCommand() string {
 
 // Пример использования
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	app, ctx := mustNewApp()
+	app, ctx := mustNewApp() // собираем все зависимости (http-сервер, бд, очереди и т.д.)
 
-	db, err := prepare.MustNewPg(ctx, app.GetConfig())
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+	go func() {
+		if err := app.Start(ctx); err != nil {
+			log.Fatalf("run error: %v", err)
+		}
+	}()
+
+	<-ctx.Done() // ждём сигнала
+	log.Println("shutting down gracefully...")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := app.Stop(shutdownCtx); err != nil {
+		log.Printf("shutdown error: %v", err)
 	}
-	db.Conn()
-
-	user_settings.New()
-
-	s := telgram_bot.NewBotService()
-
-	bot := telegram.NewClient(app.GetConfig().Telegram.Token, s.HandleCommand, s.HandleMessage, s.HandleCallbackQuery)
-
-	app.SetBot(bot)
-
-	client := NewKeeneticClient()
-
-	fmt.Println("🔌 Testing connection to Keenetic...")
-
-	// Проверяем подключение
-	if err := client.CheckConnection(); err != nil {
-		fmt.Printf("❌ Connection failed: %v\n", err)
-		//return
-	}
-	fmt.Println("✅ Successfully connected to Keenetic!")
-	bot.Start(ctx)
-	//// Тестируем разные форматы статуса
-	//fmt.Println("\n" + client.GetSystemStatus())
-	//fmt.Println("\n" + client.GetCombinedStatus())
-	//
-	//// Детальный статус
-	//fmt.Println("\n" + client.GetDetailedSystemStatus())
-	//
-	//// Проверяем VPN отдельно
-	//wgState, err := client.GetWireGuardState()
-	//if err != nil {
-	//	fmt.Printf("\n⚠️ WireGuard status error: %v\n", err)
-	//} else {
-	//	fmt.Printf("\n🛡️ WireGuard State: %s\n", wgState)
-	//}
 }

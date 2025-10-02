@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+
 	"net/http"
+
 	"os/signal"
 	"strconv"
 	"syscall"
@@ -345,6 +347,7 @@ func (kc *KeeneticClient) HandleRestartCommand() string {
 
 // Пример использования
 func main() {
+
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 

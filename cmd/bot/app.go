@@ -6,16 +6,16 @@ import (
 
 	"github.com/Traliaa/KineticVPN-Bot/internal/adapter/telegram"
 	"github.com/Traliaa/KineticVPN-Bot/internal/app"
-	"github.com/Traliaa/KineticVPN-Bot/internal/controller/http"
 	"github.com/Traliaa/KineticVPN-Bot/internal/pg/user_settings"
 	"github.com/Traliaa/KineticVPN-Bot/internal/prepare"
 	"github.com/Traliaa/KineticVPN-Bot/internal/usecase/telgram_bot"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func mustNewApp() (*app.App, context.Context) {
 	ctx := context.Background()
 	a := app.NewApp()
-	db, dbPooll, err := prepare.MustNewPg(ctx, a.GetConfig())
+	db, pool, err := prepare.MustNewPg(ctx, a.GetConfig())
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -40,7 +40,20 @@ func mustNewApp() (*app.App, context.Context) {
 	//}
 	//fmt.Println("✅ Successfully connected to Keenetic!")
 
-	http.AddRouter(ctx, a, prepare.MustNewRiver(ctx, dbPooll))
+	a.SetRiver(prepare.MustNewRiver(ctx, pool))
+	a.Handlers.Handle("/metrics", promhttp.Handler())
+
+	//go func() {
+	//	river.Start(ctx)
+	//}()
+	//http.AddRouter(a)
+	////a.Handlers.Handle("/riverui/", river)
+
+	//mux := chi.NewMux()
+	//mux.Handle("/riverui/", river)
+	//a.Server.Handler = mux
+
+	//http.AddHandler(a, "/riverui/", river)
 
 	//// Тестируем разные форматы статуса
 	//fmt.Println("\n" + client.GetSystemStatus())

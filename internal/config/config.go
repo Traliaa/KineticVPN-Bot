@@ -20,8 +20,9 @@ type Config struct {
 	} `yaml:"telegram"`
 	DB      string `yaml:"db_dsn"`
 	Service struct {
-		Host     string `yaml:"host"`
-		HTTPPort int    `yaml:"http_port"`
+		Host       string `yaml:"host"`
+		PublicPort int    `yaml:"public_port"`
+		AdminPort  int    `yaml:"admin_port"`
 	} `yaml:"service"`
 }
 

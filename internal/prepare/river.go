@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
+	"os"
 	"sort"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,7 +14,7 @@ import (
 	"riverqueue.com/riverui"
 )
 
-func MustNewRiver(ctx context.Context, dbPool *pgxpool.Pool) *riverui.HandlerOpts {
+func MustNewRiver(ctx context.Context, dbPool *pgxpool.Pool) *riverui.Handler {
 	riverClient, err := river.NewClient(riverpgxv5.New(dbPool), &river.Config{
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 100},
@@ -29,11 +31,22 @@ func MustNewRiver(ctx context.Context, dbPool *pgxpool.Pool) *riverui.HandlerOpt
 
 	endpoints := riverui.NewEndpoints(riverClient, nil)
 
-	return &riverui.HandlerOpts{
+	handler, err := riverui.NewHandler(&riverui.HandlerOpts{
 		Endpoints: endpoints,
-		//Logger:    slogLogger,
-		Prefix: "/river",
+		Logger:    slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		Prefix:    "/riverui",
+	})
+	if err != nil {
+		log.Fatalf("riverui.NewHandler %s", err)
 	}
+
+	// запускаем фоновые задачи UI
+	err = handler.Start(ctx)
+	if err != nil {
+		log.Fatalf("riverui.Start %s", err)
+	}
+
+	return handler
 
 }
 
@@ -41,6 +54,7 @@ func mustNewWorkers() *river.Workers {
 	workers := river.NewWorkers()
 	if err := river.AddWorkerSafely(workers, &SortWorker{}); err != nil {
 		panic("handle this error")
+
 	}
 	return workers
 }

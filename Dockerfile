@@ -27,6 +27,9 @@ WORKDIR /app
 COPY --from=builder /build/bot .
 # Копируем goose
 COPY --from=builder /go/bin/goose /usr/local/bin/goose
+# Копируем river
+COPY --from=builder /go/bin/river /usr/local/bin/river
+
 # Копируем миграции и конфиги
 COPY --from=builder /build/migrations ./migrations
 COPY --from=builder /build/configs ./configs
